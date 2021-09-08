@@ -1,0 +1,415 @@
+---
+title: "Logement13Test"
+author: '26966767'
+date: "6/1/2020"
+output: html_document
+---
+
+```{r}
+
+setwd("/Users/fmsaitama/Downloads/Logement")
+
+library(data.table)
+Mob1b <- fread("FD_LOGEMT_2013.txt")
+
+```
+
+
+```{r}
+
+str(Mob1b)
+
+```
+
+
+```{r}
+
+library(dplyr)
+Mob1b <- dplyr::select(Mob1b, c("COMMUNE","TYPL","TYPC","TRANSM","TPM","TACTM","STOCD", 
+                                "RECHM","NBPI","METRODOM","IRANM","INPER","INPOM","INEEM","INPSM",
+                                "INP75M","IMMIM","ILTM","HLML","EMPLM","ANEM",
+                                "AGEMEN8","AEMM","ACHL"))
+
+```
+
+
+
+```{r}
+
+Mob1b <- subset(Mob1b, Mob1b$METRODOM=='M')  
+#Mob1b <- subset(Mob1b, Mob1b$INEEM!='Y')  
+#Mob1b <- subset(Mob1b, Mob1b$INEEM!='Z')  
+Mob1b <- subset(Mob1b, Mob1b$IMMIM=='2') 
+#Mob1b <- subset(Mob1b, Mob1b$INATC ==1)  
+#Mob1b <- subset(Mob1b, Mob1b$DIPLM_15!='Z') 
+#Mob1b <- subset(Mob1b, Mob1b$LPRM=="1")
+
+library(dplyr)
+Mob1b <- dplyr::select(Mob1b, -c("METRODOM"))
+
+```
+
+```{r}
+
+setwd("/Users/fmsaitama/Documents")
+
+Munif4 <- read.csv("Munifr4.csv")
+
+library(stargazer)
+
+k<-c( "GDmarginG14" ,  "COMCODE3"  )
+
+Munif4 <-Munif4[k]
+
+```
+
+
+```{r}
+
+setwd("/Users/fmsaitama/Downloads/Logement")
+
+Mob1b <- merge(Mob1b, Munif4, by.x="COMMUNE",by.y="COMCODE3")
+
+```
+
+```{r}
+
+Mob1b <- subset(Mob1b, !is.na(Mob1b$GDmarginG14) ) 
+
+```
+
+```{r}
+
+table(Mob1b$AGEMEN8)
+
+Mob1b$AGEMEN8 <- as.numeric(Mob1b$AGEMEN8)
+
+```
+
+```{r}
+
+table(Mob1b$HLML,Mob1b$ACHL)
+
+Mob1b$HLM <- ifelse(Mob1b$HLML=="1",1,0)
+
+Mob1b <- dplyr::select(Mob1b, -c("HLML"))
+
+
+table(Mob1b$HLM,Mob1b$AEMM)
+
+```
+
+```{r}
+
+Mob1c <- subset(Mob1b, Mob1b$ACHL =="326"|Mob1b$ACHL =="327")
+
+Mob1b$Const <- ifelse(Mob1b$ACHL =="326"|Mob1b$ACHL =="327",1,0)
+
+Mob1b$Movedin <- ifelse(Mob1b$AEMM =="2014"|Mob1b$AEMM =="2015",1,0)
+
+```
+
+
+
+```{r}
+
+summary(Mob1c$HLM)
+
+
+K <- aggregate(Mob1c$HLM, list(Mob1c$COMMUNE), mean)
+
+KK1 <- aggregate(Mob1b$HLM, list(Mob1b$COMMUNE), sum)
+# KK2 <- aggregate(Mob1b$Count, list(Mob1b$COMMUNE), sum)
+
+#head(K)
+
+colnames(K) <- c("COMMUNE" , "HLM")
+
+# Mob1r <- merge(Mob1r, K, by="COMMUNE")
+
+K2 <- merge(K, Munif4, by.x="COMMUNE",by.y="COMCODE3")
+
+KX  <- substring(K2$COMMUNE,1,2)
+K2$DR  <- substring(K2$COMMUNE,1,2)
+
+#head(KX)
+
+library(varhandle)
+
+KY <- varhandle::to.dummy(KX, "D")
+
+#summary(KY)
+
+KY <- as.data.frame(KY)
+
+head(K2)
+
+library(rdrobust)
+
+rdr1 <- rdrobust(K2$HLM, K2$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, # covs = NULL , 
+kernel = "uni", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = KX,
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL  )
+
+summary(rdr1)
+
+library(rdd)
+
+  rdd_nq4 <- RDestimate(HLM ~ GDmarginG14, K2,
+                     #   subset = Mob1b$NA5 == "BE", 
+                      cutpoint = 0, bw = NULL,
+      kernel = "triangular", se.type = "HC1", cluster = K2$DR,
+      verbose = FALSE, model = FALSE, frame = FALSE)
+       plot(rdd_nq4)
+      summary(rdd_nq4)
+
+
+rdr1 <- rdrobust(K2$HLM, K2$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, # covs = NULL , 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = KX,
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL  )
+
+summary(rdr1)
+
+
+```
+
+
+```{r}
+
+
+library(rddensity)
+
+mcrd1a <- rdbwdensity(Mob1c$GDmarginG14, c = 0, p = 2, kernel = "", fitselect = "",
+vce = "")
+
+mcrd1b <- rddensity(Mob1c$GDmarginG14, c = 0, p = 2, q = 0, kernel = "", fitselect = "",
+h = c(), bwselect = "", vce = "", all = FALSE)
+
+mcrd2a <- rdbwdensity(Mob1b$GDmarginG14, c = 0, p = 2, kernel = "", fitselect = "",
+            vce = "")
+
+mcrd2b <- rddensity(Mob1b$GDmarginG14, c = 0, p = 2, q = 0, kernel = "", fitselect = "",
+h = c(), bwselect = "", vce = "", all = FALSE)
+
+mcrd3a <- rdbwdensity(K2$GDmarginG14, c = 0, p = 2, kernel = "", fitselect = "",
+vce = "")
+
+mcrd3b <- rddensity(K2$GDmarginG14, c = 0, p = 2, q = 0, kernel = "", fitselect = "",
+h = c(), bwselect = "", vce = "", all = FALSE)
+
+
+```
+
+
+
+```{r}
+
+summary(mcrd1a)
+summary(mcrd1b)
+summary(mcrd2a)
+summary(mcrd2b)
+summary(mcrd3a)
+summary(mcrd3b)
+
+```
+
+
+```{r}
+
+rdplotdensity(mcrd1b, Mob1c$GDmarginG14, plotRange = NULL, plotN = 10,
+plotGrid = c("es", "qs"), alpha = 0.05, type = NULL,
+CItype = NULL, title = "", xlabel = "", ylabel = "",
+lty = NULL, lwd = NULL, lcol = NULL, pty = NULL, pwd = NULL,
+pcol = NULL, CIshade = NULL, CIcol = NULL, legendTitle = NULL,
+legendGroups = NULL)
+
+rdplotdensity(mcrd2b, Mob1b$GDmarginG14, plotRange = NULL, plotN = 10,
+plotGrid = c("es", "qs"), alpha = 0.05, type = NULL,
+CItype = NULL, title = "", xlabel = "", ylabel = "",
+lty = NULL, lwd = NULL, lcol = NULL, pty = NULL, pwd = NULL,
+pcol = NULL, CIshade = NULL, CIcol = NULL, legendTitle = NULL,
+legendGroups = NULL)
+
+rdplotdensity(mcrd3b, K2$GDmarginG14, plotRange = NULL, plotN = 10,
+plotGrid = c("es", "qs"), alpha = 0.05, type = NULL,
+CItype = NULL, title = "", xlabel = "", ylabel = "",
+lty = NULL, lwd = NULL, lcol = NULL, pty = NULL, pwd = NULL,
+pcol = NULL, CIshade = NULL, CIcol = NULL, legendTitle = NULL,
+legendGroups = NULL)
+
+```
+
+
+```{r}
+
+Mob1i <- subset(Mob1b, Mob1b$EMPLM == "21")
+Mob1r <- subset(Mob1b, Mob1b$TACTM == "21")
+
+Mob1i$AEMM <- as.numeric(Mob1i$AEMM)
+Mob1r$AEMM <- as.numeric(Mob1r$AEMM)
+
+Mob1i$Moved08 <- ifelse(Mob1i$AEMM ==2008,1,0)
+Mob1i$Moved09 <- ifelse(Mob1i$AEMM ==2009,1,0)
+Mob1i$Moved10 <- ifelse(Mob1i$AEMM ==2010,1,0)
+Mob1i$Moved11 <- ifelse(Mob1i$AEMM ==2011,1,0)
+Mob1i$Moved12 <- ifelse(Mob1i$AEMM ==2012,1,0)
+Mob1i$Moved13 <- ifelse(Mob1i$AEMM ==2013,1,0)
+Mob1i$Moved14 <- ifelse(Mob1i$AEMM ==2014,1,0)
+Mob1i$Moved15 <- ifelse(Mob1i$AEMM ==2015,1,0)
+Mob1i$MovedBF <- ifelse(Mob1i$AEMM>=2008 & Mob1i$AEMM<=2013,1,0)
+
+Mob1r$Moved08 <- ifelse(Mob1r$AEMM ==2008,1,0)
+Mob1r$Moved09 <- ifelse(Mob1r$AEMM ==2009,1,0)
+Mob1r$Moved10 <- ifelse(Mob1r$AEMM ==2010,1,0)
+Mob1r$Moved11 <- ifelse(Mob1r$AEMM ==2011,1,0)
+Mob1r$Moved12 <- ifelse(Mob1r$AEMM ==2012,1,0)
+Mob1r$Moved13 <- ifelse(Mob1r$AEMM ==2013,1,0)
+Mob1r$Moved14 <- ifelse(Mob1r$AEMM ==2014,1,0)
+Mob1r$Moved15 <- ifelse(Mob1r$AEMM ==2015,1,0)
+Mob1r$MovedBF <- ifelse(Mob1r$AEMM>=2008 & Mob1r$AEMM<=2013,1,0)
+
+```
+
+
+```{r}
+
+Mob1rp <- subset(Mob1r, Mob1r$INEEM == "0" & Mob1r$INPOM == "0" & Mob1r$INPSM == "0" )
+
+Mob1rp$Moved_City <- ifelse(Mob1rp$IRANM=="3"|Mob1rp$IRANM=="4"|Mob1rp$IRANM=="5"|Mob1rp$IRANM=="6"|Mob1rp$IRANM=="7"|Mob1rp$IRANM=="8"|Mob1rp$IRANM=="9",1,0)
+
+Mob1rp$Moved_Within <- ifelse(Mob1rp$IRANM=="2",1,0)
+
+```
+
+
+
+```{r}
+
+library(rdrobust)
+
+rdr1 <- rdrobust(Mob1r$Moved13, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL )
+summary(rdr1)
+
+```
+
+```{r}
+Mob1r$Moving13 <- ifelse(Mob1r$AEMM > 2013,1,0)
+```
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moving13, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL )
+summary(rdr1)
+
+```
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved13, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$AGEMEN8 == "20"| Mob1r$AGEMEN8 == "25"|Mob1r$AGEMEN8 == "40"|Mob1r$AGEMEN8 == "55") )
+summary(rdr1)
+
+```
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$AGEMEN8 == "20"| Mob1r$AGEMEN8 == "25"|Mob1r$AGEMEN8 == "40"|Mob1r$AGEMEN8 == "55") )
+summary(rdr1)
+
+```
+
+```{r}
+
+rd1 <- rdplot(Mob1r$Moved13, Mob1r$GDmarginG14, c = 0, p = 4, nbins = 50, binselect = "esmv",
+scale = NULL, kernel = "uni", weights = NULL, h = NULL,
+covs = NULL, covs_eval = 0, covs_drop = TRUE,
+support = NULL, # subset = (Mob1r$AGEMEN8 =="65"),  
+hide = FALSE, ci = NULL, shade = FALSE, title = "Retired: moved in in 2013 (2013 housing census)",
+x.label = "Left-Right margin", y.label = "", x.lim = c(-50,50), #y.lim = c(0,0.03),
+col.dots = NULL, col.lines = NULL)
+
+
+```
+
+```{r}
+
+rd1 <- rdplot(Mob1r$Moved13, Mob1r$GDmarginG14, c = 0, p = 4, nbins = 50, binselect = "esmv",
+scale = NULL, kernel = "uni", weights = NULL, h = NULL,
+covs = NULL, covs_eval = 0, covs_drop = TRUE,
+support = NULL, subset = Mob1r$AGEMEN8 =="55",  
+hide = FALSE, ci = NULL, shade = FALSE, title = "Retired under 64: moved in in 2013 (2013 housing census)",
+x.label = "Left-Right margin", y.label = "", x.lim = c(-50,50), #y.lim = c(0,0.04),
+col.dots = NULL, col.lines = NULL)
+
+
+```
+
+
+```{r}
+
+rd1 <- rdplot(Mob1r$Moved13, Mob1r$GDmarginG14, c = 0, p = 4, nbins = 50, binselect = "esmv",
+scale = NULL, kernel = "uni", weights = NULL, h = NULL,
+covs = NULL, covs_eval = 0, covs_drop = TRUE,
+support = NULL, subset = (Mob1r$AGEMEN8 =="65"),  
+hide = FALSE, ci = NULL, shade = FALSE, title = NULL,
+x.label = NULL, y.label = "", x.lim = c(-50,50), #y.lim = c(0,0.005),
+col.dots = NULL, col.lines = NULL)
+
+```
+
+
+```{r}
+
+rd1 <- rdplot(Mob1r$Moved13, Mob1r$GDmarginG14, c = 0, p = 4, nbins = 50, binselect = "esmv",
+scale = NULL, kernel = "uni", weights = NULL, h = NULL,
+covs = NULL, covs_eval = 0, covs_drop = TRUE,
+support = NULL, subset = (Mob1r$AGEMEN8 =="55"|Mob1r$AGEMEN8 =="40"|Mob1r$AGEMEN8 =="25"|Mob1r$AGEMEN8 =="20" ),  
+hide = FALSE, ci = NULL, shade = FALSE, title = NULL,
+x.label = NULL, y.label = "", x.lim = c(-50,50), #y.lim = c(0,0.005),
+col.dots = NULL, col.lines = NULL)
+
+```
+
+
+```{r}
+
+rd1 <- rdplot(Mob1r$Moved12, Mob1r$GDmarginG14, c = 0, p = 4, nbins = 50, binselect = "esmv",
+scale = NULL, kernel = "uni", weights = NULL, h = NULL,
+covs = NULL, covs_eval = 0, covs_drop = TRUE,
+support = NULL, #subset = (Mob1r$AGEMEN8 =="55"|Mob1r$AGEMEN8 =="40"|Mob1r$AGEMEN8 =="25"|Mob1r$AGEMEN8 =="20" ),  
+hide = FALSE, ci = NULL, shade = FALSE, title = NULL,
+x.label = NULL, y.label = "", x.lim = c(-50,50), #y.lim = c(0,0.005),
+col.dots = NULL, col.lines = NULL)
+
+```
+
+
+
+
