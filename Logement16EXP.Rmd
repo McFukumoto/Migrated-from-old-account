@@ -1,0 +1,682 @@
+---
+title: "Logement16MC"
+author: '26966767'
+date: "6/3/2020"
+output: html_document
+---
+
+```{r}
+
+setwd("/Users/fmsaitama/Downloads/Logement")
+
+library(data.table)
+Mob1b <- fread("FD_LOGEMT_2016.csv")
+
+```
+
+
+```{r}
+
+str(Mob1b)
+
+```
+
+
+```{r}
+
+library(dplyr)
+Mob1b <- dplyr::select(Mob1b, c("COMMUNE","TYPL","TYPC","TRANSM","TPM","TACTM","STOCD", 
+                                "RECHM","NBPI","METRODOM","IRANM","INPER","INPOM","INEEM","INPSM",
+                                "INP75M","IMMIM","ILTM","HLML","EMPLM","ANEM",
+                                "AGEMEN8","AEMM","ACHL"))
+
+```
+
+
+
+```{r}
+
+Mob1b <- subset(Mob1b, Mob1b$METRODOM=='M')  
+Mob1b <- subset(Mob1b, Mob1b$INEEM!='Y')  
+Mob1b <- subset(Mob1b, Mob1b$INEEM!='Z')  
+Mob1b <- subset(Mob1b, Mob1b$IMMIM=='2') 
+#Mob1b <- subset(Mob1b, Mob1b$INATC ==1)  
+#Mob1b <- subset(Mob1b, Mob1b$DIPLM_15!='Z') 
+#Mob1b <- subset(Mob1b, Mob1b$LPRM=="1")
+
+library(dplyr)
+Mob1b <- dplyr::select(Mob1b, -c("METRODOM"))
+
+```
+
+```{r}
+
+setwd("/Users/fmsaitama/Documents")
+
+Munif4 <- read.csv("Munifr4.csv")
+
+library(stargazer)
+
+k<-c( "GDmarginG14" ,  "COMCODE3"  )
+
+Munif4 <-Munif4[k]
+
+```
+
+
+```{r}
+
+setwd("/Users/fmsaitama/Downloads/Logement")
+
+Mob1b <- merge(Mob1b, Munif4, by.x="COMMUNE",by.y="COMCODE3")
+
+```
+
+```{r}
+
+Mob1b <- subset(Mob1b, !is.na(Mob1b$GDmarginG14) ) 
+
+```
+
+```{r}
+
+table(Mob1b$AGEMEN8)
+
+Mob1b$AGEMEN8 <- as.numeric(Mob1b$AGEMEN8)
+
+```
+
+```{r}
+
+table(Mob1b$HLML,Mob1b$ACHL)
+
+Mob1b$HLM <- ifelse(Mob1b$HLML=="1",1,0)
+
+Mob1b <- dplyr::select(Mob1b, -c("HLML"))
+
+
+table(Mob1b$HLM,Mob1b$AEMM)
+
+```
+
+```{r}
+
+Mob1c <- subset(Mob1b, Mob1b$ACHL =="326"|Mob1b$ACHL =="327")
+
+Mob1b$Const <- ifelse(Mob1b$ACHL =="326"|Mob1b$ACHL =="327",1,0)
+
+Mob1b$Movedin <- ifelse(Mob1b$AEMM =="2014"|Mob1b$AEMM =="2015",1,0)
+
+```
+
+
+
+```{r}
+
+Mob1i <- subset(Mob1b, Mob1b$EMPLM == "21")
+Mob1r <- subset(Mob1b, Mob1b$TACTM == "21")
+
+Mob1i$AEMM <- as.numeric(Mob1i$AEMM)
+Mob1r$AEMM <- as.numeric(Mob1r$AEMM)
+
+Mob1i$Moved08 <- ifelse(Mob1i$AEMM ==2008,1,0)
+Mob1i$Moved09 <- ifelse(Mob1i$AEMM ==2009,1,0)
+Mob1i$Moved10 <- ifelse(Mob1i$AEMM ==2010,1,0)
+Mob1i$Moved11 <- ifelse(Mob1i$AEMM ==2011,1,0)
+Mob1i$Moved12 <- ifelse(Mob1i$AEMM ==2012,1,0)
+Mob1i$Moved13 <- ifelse(Mob1i$AEMM ==2013,1,0)
+Mob1i$Moved14 <- ifelse(Mob1i$AEMM ==2014,1,0)
+Mob1i$Moved15 <- ifelse(Mob1i$AEMM ==2015,1,0)
+Mob1i$Moved16 <- ifelse(Mob1i$AEMM ==2016,1,0)
+Mob1i$Moved17 <- ifelse(Mob1i$AEMM ==2017,1,0)
+Mob1i$Moved18 <- ifelse(Mob1i$AEMM ==2018,1,0)
+Mob1i$MovedBF <- ifelse(Mob1i$AEMM >=2008 & Mob1i$AEMM<=2013,1,0)
+Mob1i$MovedAF <- ifelse(Mob1i$AEMM >=2014 & Mob1i$AEMM<=2015,1,0)
+
+Mob1r$Moved08 <- ifelse(Mob1r$AEMM ==2008,1,0)
+Mob1r$Moved09 <- ifelse(Mob1r$AEMM ==2009,1,0)
+Mob1r$Moved10 <- ifelse(Mob1r$AEMM ==2010,1,0)
+Mob1r$Moved11 <- ifelse(Mob1r$AEMM ==2011,1,0)
+Mob1r$Moved12 <- ifelse(Mob1r$AEMM ==2012,1,0)
+Mob1r$Moved13 <- ifelse(Mob1r$AEMM ==2013,1,0)
+Mob1r$Moved14 <- ifelse(Mob1r$AEMM ==2014,1,0)
+Mob1r$Moved15 <- ifelse(Mob1r$AEMM ==2015,1,0)
+Mob1r$Moved16 <- ifelse(Mob1r$AEMM ==2016,1,0)
+Mob1r$Moved17 <- ifelse(Mob1r$AEMM ==2017,1,0)
+Mob1r$Moved18 <- ifelse(Mob1r$AEMM ==2018,1,0)
+Mob1r$MovedBF <- ifelse(Mob1r$AEMM >=2008 & Mob1r$AEMM<=2013,1,0)
+Mob1r$MovedAF <- ifelse(Mob1r$AEMM >=2014 & Mob1r$AEMM<=2015,1,0)
+
+Mob1r$Moving  <- ifelse(Mob1r$AEMM>=2015,1,0)
+Mob1r$Moving16  <- ifelse(Mob1r$AEMM>=2016,1,0)
+
+```
+
+
+```{r}
+
+Mob1rp <- subset(Mob1r, Mob1r$INEEM == "0" & Mob1r$INPOM == "0" & Mob1r$INPSM == "0" )
+
+Mob1rp$Moved_City <- ifelse(Mob1rp$IRANM=="3"|Mob1rp$IRANM=="4"|Mob1rp$IRANM=="5"|Mob1rp$IRANM=="6"|Mob1rp$IRANM=="7"|Mob1rp$IRANM=="8"|Mob1rp$IRANM=="9",1,0)
+
+Mob1rp$Moved_Within <- ifelse(Mob1rp$IRANM=="2",1,0)
+
+```
+
+
+```{r}
+
+table(Mob1r$NBPI)
+
+```
+
+
+```{r}
+
+library(rdrobust)
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$NBPI == "1" )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$NBPI == "2"  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$NBPI == "3" )) 
+summary(rdr1)
+
+
+```
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$NBPI == "4"  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$NBPI == "5"  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$NBPI == "6" )) 
+summary(rdr1)
+
+```
+
+
+```{r}
+
+library(rdrobust)
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$NBPI == "1" )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$NBPI == "2"  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$NBPI == "3" )) 
+summary(rdr1)
+
+
+```
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$NBPI == "5"  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$NBPI == "6" )) 
+summary(rdr1)
+
+```
+
+
+
+
+```{r}
+Mob1r$NBPI <- as.numeric(Mob1r$NBPI)
+```
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$NBPI <= 2  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$NBPI >= 7  )) 
+summary(rdr1)
+
+```
+
+
+```{r}
+
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$NBPI == 4  )) 
+summary(rdr1)
+
+
+```
+
+
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "C2014" | Mob1r$ACHL == "C2015" |Mob1r$ACHL == "C2016" |Mob1r$ACHL == "C2017" |Mob1r$ACHL == "C2018" )) 
+summary(rdr1)
+
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "C2014" | Mob1r$ACHL == "C2015" |Mob1r$ACHL == "C2016" |Mob1r$ACHL == "C2017" |Mob1r$ACHL == "C2018" )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "C2014" | Mob1r$ACHL == "C2015" |Mob1r$ACHL == "C2016" |Mob1r$ACHL == "C2017" |Mob1r$ACHL == "C2018" )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "C2014" | Mob1r$ACHL == "C2015" |Mob1r$ACHL == "C2016" |Mob1r$ACHL == "C2017" |Mob1r$ACHL == "C2018" )) 
+summary(rdr1)
+
+```
+
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1rp$Moved15, Mob1rp$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1rp$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1rp$ACHL == "C2014" | Mob1rp$ACHL == "C2015" |Mob1rp$ACHL == "C2016" |Mob1rp$ACHL == "C2017" |Mob1rp$ACHL == "C2018" )) 
+summary(rdr1)
+
+
+rdr1 <- rdrobust(Mob1rp$Moved16, Mob1rp$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1rp$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1rp$ACHL == "C2014" | Mob1rp$ACHL == "C2015" |Mob1rp$ACHL == "C2016" |Mob1rp$ACHL == "C2017" |Mob1rp$ACHL == "C2018" )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1rp$Moving, Mob1rp$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1rp$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1rp$ACHL == "C2014" | Mob1rp$ACHL == "C2015" |Mob1rp$ACHL == "C2016" |Mob1rp$ACHL == "C2017" |Mob1rp$ACHL == "C2018" )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1rp$Moving16, Mob1rp$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1rp$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1rp$ACHL == "C2014" | Mob1rp$ACHL == "C2015" |Mob1rp$ACHL == "C2016" |Mob1rp$ACHL == "C2017" |Mob1rp$ACHL == "C2018" )) 
+summary(rdr1)
+
+```
+
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "C108" | Mob1r$ACHL == "C109" |Mob1r$ACHL == "C110" |Mob1r$ACHL == "C111" |Mob1r$ACHL == "C112" |Mob1r$ACHL == "C113")) 
+summary(rdr1)
+
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,   subset= (Mob1r$ACHL == "C108" | Mob1r$ACHL == "C109" |Mob1r$ACHL == "C110" |Mob1r$ACHL == "C111" |Mob1r$ACHL == "C112" |Mob1r$ACHL == "C113")) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,   subset= (Mob1r$ACHL == "C108" | Mob1r$ACHL == "C109" |Mob1r$ACHL == "C110" |Mob1r$ACHL == "C111" |Mob1r$ACHL == "C112" |Mob1r$ACHL == "C113")) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,   subset= (Mob1r$ACHL == "C108" | Mob1r$ACHL == "C109" |Mob1r$ACHL == "C110" |Mob1r$ACHL == "C111" |Mob1r$ACHL == "C112" |Mob1r$ACHL == "C113")) 
+summary(rdr1)
+
+```
+
+```{r}
+
+table(Mob1r$AGEMEN8)
+```
+
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$AGEMEN8 == "20" | Mob1r$AGEMEN8 == "25" |Mob1r$AGEMEN8 == "40" |Mob1r$AGEMEN8 == "55" )) 
+summary(rdr1)
+
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,   subset= (Mob1r$AGEMEN8 == "20" | Mob1r$AGEMEN8 == "25" |Mob1r$AGEMEN8 == "40" |Mob1r$AGEMEN8 == "55" )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,   subset= (Mob1r$AGEMEN8 == "20" | Mob1r$AGEMEN8 == "25" |Mob1r$AGEMEN8 == "40" |Mob1r$AGEMEN8 == "55" )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,   subset= (Mob1r$AGEMEN8 == "20" | Mob1r$AGEMEN8 == "25" |Mob1r$AGEMEN8 == "40" |Mob1r$AGEMEN8 == "55" )) 
+summary(rdr1)
+
+```
+
+```{r}
+
+table(Mob1r$ACHL)
+
+```
+
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "C100" | Mob1r$ACHL == "C106" |Mob1r$ACHL == "C107")) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "C100" | Mob1r$ACHL == "C106" |Mob1r$ACHL == "C107")) 
+summary(rdr1)
+
+```
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "A11")) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "A11")) 
+summary(rdr1)
+
+```
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "A12")) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "A12")) 
+summary(rdr1)
+
+```
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "B11")) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "B11")) 
+summary(rdr1)
+
+```
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "B12")) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moving, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL,  subset= (Mob1r$ACHL == "B12")) 
+summary(rdr1)
+
+```
+
+
+
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$STOCD == "10"  )) 
+summary(rdr1)
+
+```
+```{r}
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$TYPC == "3"  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$TYPC == "2"  )) 
+summary(rdr1)
+
+```
+
+```{r}
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$TYPL == "2"  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$TYPL == "1"  )) 
+summary(rdr1)
+
+rdr1 <- rdrobust(Mob1r$Moved16, Mob1r$GDmarginG14, c = 0, fuzzy = NULL, deriv = NULL, p = NULL, q = NULL,
+h = NULL, b = NULL, rho = NULL, #covs = KY, 
+kernel = "tri", weights = NULL, bwselect = "mserd",
+vce = "nn",   cluster = Mob1r$COMMUNE, 
+nnmatch = 3, level = 95, scalepar = 100, scaleregul = 1,
+sharpbw = FALSE, all = NULL , subset= (Mob1r$TYPC == "1"  )) 
+summary(rdr1)
+
+```
+
+```{r}
+
+rd1 <- rdplot(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, p = 4, nbins = 70, binselect = "esmv",
+scale = NULL, kernel = "uni", weights = NULL, h = NULL,
+covs = NULL, covs_eval = 0, covs_drop = TRUE,
+support = NULL, # subset = (Mob1r$AGEMEN8 =="55"),  
+hide = FALSE, ci = NULL, shade = FALSE, title = "Retired: moved in in 2015 (2016 housing census)",
+x.label = "Left-Right Margin", y.label = "", x.lim = c(-50,50), y.lim = c(0.01,0.05),
+col.dots = NULL, col.lines = NULL)
+
+```
+
+```{r}
+
+rd1 <- rdplot(Mob1r$Moved15, Mob1r$GDmarginG14, c = 0, p = 4, nbins = 70, binselect = "esmv",
+scale = NULL, kernel = "uni", weights = NULL, h = NULL,
+covs = NULL, covs_eval = 0, covs_drop = TRUE,
+support = NULL, subset = (Mob1r$AGEMEN8 =="55"),  
+hide = FALSE, ci = NULL, shade = FALSE, title = "Retired under 64: moved in in 2015 (2016 housing census)",
+x.label = "Left-Right Margin", y.label = "", x.lim = c(-50,50), y.lim = c(0.01,0.05),
+col.dots = NULL, col.lines = NULL)
+
+```
+
